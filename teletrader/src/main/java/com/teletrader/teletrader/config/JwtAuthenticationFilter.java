@@ -6,9 +6,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -39,8 +41,31 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         jwt = authHeader.substring(7);
         username = jwtService.extractUsername(jwt);
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {   // user is not connected
+        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {   // user is not authenticated
+            // Get user from the database
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
+
+            // Check if token is valid
+            if (jwtService.isTokenValid(jwt, userDetails)) {
+                // Create auth token
+                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                        userDetails,
+                        null,
+                        userDetails.getAuthorities()
+                );
+
+                // Add details of request to the auth token
+                authToken.setDetails(
+                        new WebAuthenticationDetailsSource()
+                                .buildDetails(request)
+                );
+
+                // Update the authentication token
+                SecurityContextHolder.getContext().setAuthentication(authToken);
+            }
+
+            // Execute other filters
+            filterChain.doFilter(request, response);
         }
     }
 }
