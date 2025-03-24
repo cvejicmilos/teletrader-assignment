@@ -19,13 +19,13 @@ public class AuthenticationController {
     public ResponseEntity<AuthenticationResponse> register(
             @RequestBody RegisterRequest request
     ) {
-        return ResponseEntity.of(authenticationService.register(request));
+        return ResponseEntity.ok(authenticationService.register(request));
     }
 
     @PostMapping("/login")
     public ResponseEntity<AuthenticationResponse> authenticate(
             @RequestBody AuthenticationRequest request
     ) {
-        return ResponseEntity.of(authenticationService.authenticate(request));
+        return ResponseEntity.ok(authenticationService.authenticate(request));
     }
 }
