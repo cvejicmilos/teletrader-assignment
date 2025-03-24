@@ -25,7 +25,7 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(auth -> auth
                         // Authenticate all requests other than the ones that are whitelisted
                         // TODO: Add the list of whitelisted endpoints
-                        .requestMatchers("")
+                        .requestMatchers("/auth/")
                         .permitAll()
                         .anyRequest()
                         .authenticated())
