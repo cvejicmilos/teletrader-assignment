@@ -19,6 +19,13 @@ public class ApplicationConfig {
 
     private final UserRepository userRepository;
 
+    /*
+    public ApplicationConfig(UserRepository userRepository) {
+
+        this.userRepository = userRepository;
+    }
+     */
+
     @Bean
     public UserDetailsService userDetailsService() {
         return username -> userRepository.findByUsername(username)
