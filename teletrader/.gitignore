@@ -33,4 +33,4 @@ build/
 .vscode/
 
 ### Other
-teletrader/src/main/resources/application-secret.yml
+src/main/resources/application-secret.yml
