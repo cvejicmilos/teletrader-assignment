@@ -46,17 +46,19 @@ public class AuthenticationService {
     }
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
-        );
 
-        // Username and password are correct
         var user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                        .orElseThrow(() -> new UsernameNotFoundException("User with that username doesn't exist"));
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new RuntimeException("Invalid username or password");
+        }
+
         var jwtToken = jwtService.generateToken(user);
         return AuthenticationResponse
                 .builder()
                 .token(jwtToken)
+                .message("User logged in successfully")
                 .build();
     }
 }
