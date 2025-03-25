@@ -23,6 +23,11 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
 
     public AuthenticationResponse register(RegisterRequest request) {
+
+        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
+            throw new RuntimeException("Username is already in use");
+        }
+
         var user = User.builder()
                 .firstname(request.getFirstname())
                 .lastname(request.getLastname())
@@ -36,6 +41,7 @@ public class AuthenticationService {
         var jwtToken = jwtService.generateToken(user);
         return AuthenticationResponse.builder()
                 .token(jwtToken)
+                .message("User registered successfully")
                 .build();
     }
 

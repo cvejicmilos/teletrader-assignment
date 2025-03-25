@@ -2,6 +2,7 @@ package com.teletrader.teletrader.auth;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.Response;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,7 +20,12 @@ public class AuthenticationController {
     public ResponseEntity<AuthenticationResponse> register(
             @RequestBody RegisterRequest request
     ) {
-        return ResponseEntity.ok(authenticationService.register(request));
+        try {
+            AuthenticationResponse response = authenticationService.register(request);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new AuthenticationResponse(e.getMessage()));
+        }
     }
 
     @PostMapping("/login")
