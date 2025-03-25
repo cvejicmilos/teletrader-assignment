@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/needs_authorization")
+@RequestMapping("/healthcheck")
 public class TempController {
     @GetMapping
     public ResponseEntity<String> healthcheck() {

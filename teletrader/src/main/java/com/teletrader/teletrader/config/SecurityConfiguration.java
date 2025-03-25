@@ -3,6 +3,7 @@ package com.teletrader.teletrader.config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -33,7 +34,7 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(auth -> auth
                         // Authenticate all requests other than the ones that are whitelisted
                         // TODO: Add the list of whitelisted endpoints
-                        .requestMatchers("/auth/*")
+                        .requestMatchers(HttpMethod.POST, "/auth/register", "/auth/login")
                         .permitAll()
                         .anyRequest()
                         .authenticated())
