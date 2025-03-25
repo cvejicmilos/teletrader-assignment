@@ -14,4 +14,8 @@ public class OrderService {
     public List<Order> getAllOrders() {
         return orderRepository.findAll();
     }
+
+    public List<Order> getLast10OrdersByType(Type type) {
+        return orderRepository.findTop10ByTypeOrderByIdDesc(type);
+    }
 }

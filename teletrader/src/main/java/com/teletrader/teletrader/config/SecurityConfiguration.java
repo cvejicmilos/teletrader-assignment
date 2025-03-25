@@ -27,6 +27,8 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/auth/register", "/auth/login")
                         .permitAll()
+                        .requestMatchers(HttpMethod.GET, "/orders", "/orders/latest")
+                        .permitAll()
                         .anyRequest()
                         .authenticated()
                 )

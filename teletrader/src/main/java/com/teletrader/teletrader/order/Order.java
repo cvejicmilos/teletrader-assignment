@@ -1,6 +1,5 @@
 package com.teletrader.teletrader.order;
 
-import com.teletrader.teletrader.user.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,16 +17,19 @@ public class Order {
     @GeneratedValue
     private Integer id;
 
-    @ManyToOne
-    @JoinColumn(name = "creator_id", nullable = false)
-    private User creator;
+    @Column(name = "creator_id", nullable = false)
+    private Integer creatorId;
 
-    private Float stock_price;
-    private Integer stock_amount;
-    private String stock_symbol;
+    @Column(name = "acceptor_id")
+    private Integer acceptorId;
+
+    private Float stockPrice;
+    private Integer stockAmount;
+    private String stockSymbol;
+
+    @Builder.Default
+    private Boolean isActive = true;
 
     @Enumerated(EnumType.STRING)
     private Type type;
-    @Enumerated(EnumType.STRING)
-    private Status status;
 }

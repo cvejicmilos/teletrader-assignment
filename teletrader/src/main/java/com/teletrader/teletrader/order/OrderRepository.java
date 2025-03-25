@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface OrderRepository extends JpaRepository<Order, Integer> {
     List<Order> findByCreatorId(Integer creatorId);
+    List<Order> findTop10ByTypeOrderByIdDesc(Type type);
 }
