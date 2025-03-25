@@ -23,13 +23,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
 
-    /*
-    public JwtAuthenticationFilter(JwtService jwtService, UserDetailsService userDetailsService) {
-        this.jwtService = jwtService;
-        this.userDetailsService = userDetailsService;
-    }
-     */
-
     @Override
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,
@@ -48,30 +41,31 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         jwt = authHeader.substring(7);
         username = jwtService.extractUsername(jwt);
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {   // user is not authenticated
-            // Get user from the database
+        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
 
-            // Check if token is valid
             if (jwtService.isTokenValid(jwt, userDetails)) {
-                // Create auth token
+                logger.info("Token is valid, Username: " + username);
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails,
                         null,
                         userDetails.getAuthorities()
                 );
 
-                // Add details of request to the auth token
                 authToken.setDetails(
                         new WebAuthenticationDetailsSource()
                                 .buildDetails(request)
                 );
 
-                // Update the authentication token
                 SecurityContextHolder.getContext().setAuthentication(authToken);
+                logger.info("Authenticated user: " + userDetails.getUsername());
+                userDetails.getAuthorities().forEach(authority ->
+                        logger.info("Granted authority: " + authority.getAuthority())
+                );
+            } else {
+                logger.warn("Invalid JWT token for user " + username);
             }
 
-            // Execute other filters
             filterChain.doFilter(request, response);
         }
     }
