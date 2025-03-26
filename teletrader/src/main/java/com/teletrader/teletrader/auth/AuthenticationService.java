@@ -4,11 +4,8 @@ import com.teletrader.teletrader.config.JwtService;
 import com.teletrader.teletrader.user.Role;
 import com.teletrader.teletrader.user.User;
 import com.teletrader.teletrader.user.UserRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ProblemDetail;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -28,12 +25,14 @@ public class AuthenticationService {
             throw new RuntimeException("Username is already in use");
         }
 
+        Role role = (request.getRole() != null) ? request.getRole() : Role.USER;
+
         var user = User.builder()
                 .firstname(request.getFirstname())
                 .lastname(request.getLastname())
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(Role.USER)
+                .role(role)
                 .build();
 
         userRepository.save(user);
