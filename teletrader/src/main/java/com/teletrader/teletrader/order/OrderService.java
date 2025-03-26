@@ -64,4 +64,19 @@ public class OrderService {
 
         return orderRepository.save(newOrder);
     }
+
+    public Order cancelOrder(Integer id) {
+        String username = getAuthenticatedUsername();
+
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new IllegalStateException("Order not found"));
+
+        if (!order.getCreator().getUsername().equals(username)) {
+            throw new IllegalStateException("You can only cancel your own orders");
+        }
+
+        order.setIsActive(false);
+
+        return orderRepository.save(order);
+    }
 }

@@ -31,6 +31,16 @@ public class OrderController {
         }
     }
 
+    @PatchMapping("/cancel/{id}")
+    public ResponseEntity<Order> cancelOrder(@PathVariable Integer id) {
+        try {
+            Order cancelledOrder = orderService.cancelOrder(id);
+            return ResponseEntity.status(HttpStatus.OK).body(cancelledOrder);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+    }
+
     @GetMapping("/latest")
     public ResponseEntity<List<Order>> getLast10OrdersByType(@RequestParam Type type) {
         List<Order> orders = orderService.getLast10OrdersByType(type);
