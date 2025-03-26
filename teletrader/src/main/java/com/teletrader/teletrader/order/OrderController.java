@@ -3,6 +3,7 @@ package com.teletrader.teletrader.order;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -15,12 +16,14 @@ public class OrderController {
 
     private final OrderService orderService;
 
+    // Returns a list of all ACTIVE orders
     @GetMapping
     public ResponseEntity<List<Order>> getAllActiveOrders() {
         List<Order> orders = orderService.getAllActiveOrders();
         return ResponseEntity.ok(orders);
     }
 
+    // Creates a new order
     @PostMapping
     public ResponseEntity<Order> createOrder(@RequestBody @Valid CreateOrderRequest createOrderRequest) {
         try {
@@ -31,6 +34,7 @@ public class OrderController {
         }
     }
 
+    // Cancels an order with that id
     @PatchMapping("/cancel/{id}")
     public ResponseEntity<Order> cancelOrder(@PathVariable Integer id) {
         try {
@@ -41,12 +45,14 @@ public class OrderController {
         }
     }
 
+    // Returns a list of 10 last active orders
     @GetMapping("/latest")
     public ResponseEntity<List<Order>> getLast10OrdersByType(@RequestParam Type type) {
         List<Order> orders = orderService.getLast10OrdersByType(type);
         return ResponseEntity.ok(orders);
     }
 
+    // Returns all (active and not) orders made by user
     @GetMapping("/my")
     public ResponseEntity<?> getMyOrders() {
         try {
@@ -57,6 +63,7 @@ public class OrderController {
         }
     }
 
+    // Returns a list of top 10 active orders
     @GetMapping("/top")
     public ResponseEntity<?> getTopOrders(@RequestParam Type type, @RequestParam String stockSymbol) {
         try {
@@ -67,5 +74,13 @@ public class OrderController {
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred");
         }
+    }
+
+    // Returns a list of all orders
+    @GetMapping("/all")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<List<Order>> getAllOrders() {
+        List<Order> orders = orderService.getAllOrders();
+        return ResponseEntity.ok(orders);
     }
 }

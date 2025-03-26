@@ -93,4 +93,8 @@ public class OrderService {
             throw new IllegalArgumentException("Order type must be BUY or SELL");
         }
     }
+
+    public List<Order> getAllOrders() {
+        return orderRepository.findAll();
+    }
 }

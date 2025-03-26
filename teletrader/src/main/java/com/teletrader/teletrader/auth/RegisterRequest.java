@@ -1,5 +1,6 @@
 package com.teletrader.teletrader.auth;
 
+import com.teletrader.teletrader.user.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,4 +15,5 @@ public class RegisterRequest {
     private String lastname;
     private String username;
     private String password;
+    private Role role;
 }
