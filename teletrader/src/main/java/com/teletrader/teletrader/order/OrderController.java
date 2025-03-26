@@ -83,4 +83,14 @@ public class OrderController {
         List<Order> orders = orderService.getAllOrders();
         return ResponseEntity.ok(orders);
     }
+
+    @PatchMapping("/accept/{id}")
+    public ResponseEntity<Order> acceptOrder(@PathVariable Integer id) {
+        try {
+            Order acceptedOrder = orderService.acceptOrder(id);
+            return ResponseEntity.status(HttpStatus.OK).body(acceptedOrder);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+    }
 }

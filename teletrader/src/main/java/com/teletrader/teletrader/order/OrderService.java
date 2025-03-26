@@ -5,6 +5,7 @@ import com.teletrader.teletrader.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.server.ui.OneTimeTokenSubmitPageGeneratingWebFilter;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -96,5 +97,32 @@ public class OrderService {
 
     public List<Order> getAllOrders() {
         return orderRepository.findAll();
+    }
+
+    public Order acceptOrder(Integer id) {
+
+        String username = getAuthenticatedUsername();
+
+        User acceptor = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalStateException("User not found"));
+
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new IllegalStateException("Order not found"));
+
+        if (!order.getIsActive()) {
+            throw new IllegalStateException("Order is no longer active");
+        }
+
+        if (order.getCreator().getUsername().equals(username)) {
+            throw new IllegalStateException("You cannot accept your own order");
+        }
+
+        if (order.getAcceptor() != null) {
+            throw new IllegalStateException("Order is already accepted");
+        }
+
+        order.setAcceptor(acceptor);
+        order.setIsActive(false);
+        return orderRepository.save(order);
     }
 }

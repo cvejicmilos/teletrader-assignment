@@ -22,8 +22,9 @@ public class Order {
     @JoinColumn(name = "creator_id", nullable = false)
     private User creator;
 
-    @Column(name = "acceptor_id")
-    private Integer acceptorId;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "acceptor_id")
+    private User acceptor;
 
     @Column(nullable = false)
     private Float stockPrice;
