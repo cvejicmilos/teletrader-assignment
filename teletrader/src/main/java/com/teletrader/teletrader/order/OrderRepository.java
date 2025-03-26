@@ -10,6 +10,6 @@ import java.util.List;
 public interface OrderRepository extends JpaRepository<Order, Integer> {
     List<Order> findByCreatorId(Integer creatorId);
     List<Order> findTop10ByTypeOrderByIdDesc(Type type);
-    @Query("SELECT o FROM Order o JOIN User u ON o.creatorId = u.id WHERE u.username = :username")
+    @Query("SELECT o FROM Order o JOIN FETCH o.creator WHERE o.creator.username = :username")
     List<Order> findByCreatorUsername(@Param("username") String username);
 }

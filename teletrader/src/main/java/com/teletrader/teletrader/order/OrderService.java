@@ -1,5 +1,6 @@
 package com.teletrader.teletrader.order;
 
+import com.teletrader.teletrader.user.User;
 import com.teletrader.teletrader.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -34,5 +35,33 @@ public class OrderService {
             return ((UserDetails) principal).getUsername();
         }
         throw new IllegalStateException("User not authenticated");
+    }
+
+    public Integer getCurrentUserId() {
+        String username = getAuthenticatedUsername();
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalStateException("User not found"))
+                .getId();
+    }
+
+    public Order createOrder(CreateOrderRequest createOrderRequest) {
+        if (createOrderRequest.getStockPrice() <= 0 || createOrderRequest.getStockAmount() <= 0) {
+            throw new IllegalArgumentException("Stock price and amount must be greater than zero");
+        }
+
+        String username = getAuthenticatedUsername();
+        User creator = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalStateException("User not found"));
+
+        Order newOrder = Order.builder()
+                .stockPrice(createOrderRequest.getStockPrice())
+                .stockAmount(createOrderRequest.getStockAmount())
+                .stockSymbol(createOrderRequest.getStockSymbol())
+                .type(createOrderRequest.getType())
+                .creator(creator)
+                .isActive(true)
+                .build();
+
+        return orderRepository.save(newOrder);
     }
 }
