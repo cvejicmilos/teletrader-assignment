@@ -5,7 +5,6 @@ import com.teletrader.teletrader.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.web.server.ui.OneTimeTokenSubmitPageGeneratingWebFilter;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -36,13 +35,6 @@ public class OrderService {
             return ((UserDetails) principal).getUsername();
         }
         throw new IllegalStateException("User not authenticated");
-    }
-
-    public Integer getCurrentUserId() {
-        String username = getAuthenticatedUsername();
-        return userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalStateException("User not found"))
-                .getId();
     }
 
     public Order createOrder(CreateOrderRequest createOrderRequest) {
