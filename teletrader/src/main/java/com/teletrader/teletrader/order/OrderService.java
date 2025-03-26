@@ -16,12 +16,12 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
 
-    public List<Order> getAllOrders() {
-        return orderRepository.findAll();
+    public List<Order> getAllActiveOrders() {
+        return orderRepository.findByIsActiveTrue();
     }
 
     public List<Order> getLast10OrdersByType(Type type) {
-        return orderRepository.findTop10ByTypeOrderByIdDesc(type);
+        return orderRepository.findTop10ByTypeAndIsActiveTrueOrderByIdDesc(type);
     }
 
     public List<Order> getCurrentUserOrders () {
