@@ -79,4 +79,18 @@ public class OrderService {
 
         return orderRepository.save(order);
     }
+
+    public List<Order> getTopOrders(Type type, String stockSymbol) {
+        if (stockSymbol == null || stockSymbol.isBlank()) {
+            throw new IllegalArgumentException("Stock symbol cannot be null or empty");
+        }
+
+        if (type == Type.BUY) {
+            return orderRepository.findTop10ByStockSymbolAndTypeOrderByStockPriceDesc(stockSymbol, type);
+        } else if (type == Type.SELL) {
+            return orderRepository.findTop10ByStockSymbolAndTypeOrderByStockPriceAsc(stockSymbol, type);
+        } else {
+            throw new IllegalArgumentException("Order type must be BUY or SELL");
+        }
+    }
 }

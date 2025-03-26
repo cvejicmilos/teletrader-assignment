@@ -56,4 +56,16 @@ public class OrderController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
+
+    @GetMapping("/top")
+    public ResponseEntity<?> getTopOrders(@RequestParam Type type, @RequestParam String stockSymbol) {
+        try {
+            List<Order> topOrders = orderService.getTopOrders(type, stockSymbol);
+            return ResponseEntity.ok(topOrders);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred");
+        }
+    }
 }
