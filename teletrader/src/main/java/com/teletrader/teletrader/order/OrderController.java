@@ -18,16 +18,16 @@ public class OrderController {
 
     // Returns a list of all ACTIVE orders
     @GetMapping
-    public ResponseEntity<List<Order>> getAllActiveOrders() {
-        List<Order> orders = orderService.getAllActiveOrders();
+    public ResponseEntity<List<OrderResponse>> getAllActiveOrders() {
+        List<OrderResponse> orders = orderService.getAllActiveOrders();
         return ResponseEntity.ok(orders);
     }
 
     // Creates a new order
     @PostMapping
-    public ResponseEntity<Order> createOrder(@RequestBody @Valid CreateOrderRequest createOrderRequest) {
+    public ResponseEntity<OrderResponse> createOrder(@RequestBody @Valid CreateOrderRequest createOrderRequest) {
         try {
-            Order newOrder = orderService.createOrder(createOrderRequest);
+            OrderResponse newOrder = orderService.createOrder(createOrderRequest);
             return ResponseEntity.status(HttpStatus.CREATED).body(newOrder);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
@@ -36,9 +36,9 @@ public class OrderController {
 
     // Cancels an order with that id
     @PatchMapping("/cancel/{id}")
-    public ResponseEntity<Order> cancelOrder(@PathVariable Integer id) {
+    public ResponseEntity<OrderResponse> cancelOrder(@PathVariable Integer id) {
         try {
-            Order cancelledOrder = orderService.cancelOrder(id);
+            OrderResponse cancelledOrder = orderService.cancelOrder(id);
             return ResponseEntity.status(HttpStatus.OK).body(cancelledOrder);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
@@ -47,8 +47,8 @@ public class OrderController {
 
     // Returns a list of 10 last active orders
     @GetMapping("/latest")
-    public ResponseEntity<List<Order>> getLast10OrdersByType(@RequestParam Type type) {
-        List<Order> orders = orderService.getLast10OrdersByType(type);
+    public ResponseEntity<List<OrderResponse>> getLast10OrdersByType(@RequestParam Type type) {
+        List<OrderResponse> orders = orderService.getLast10OrdersByType(type);
         return ResponseEntity.ok(orders);
     }
 
@@ -56,7 +56,7 @@ public class OrderController {
     @GetMapping("/my")
     public ResponseEntity<?> getMyOrders() {
         try {
-            List<Order> myOrders = orderService.getCurrentUserOrders();
+            List<OrderResponse> myOrders = orderService.getCurrentUserOrders();
             return ResponseEntity.ok(myOrders);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
@@ -67,7 +67,7 @@ public class OrderController {
     @GetMapping("/top")
     public ResponseEntity<?> getTopOrders(@RequestParam Type type, @RequestParam String stockSymbol) {
         try {
-            List<Order> topOrders = orderService.getTopOrders(type, stockSymbol);
+            List<OrderResponse> topOrders = orderService.getTopOrders(type, stockSymbol);
             return ResponseEntity.ok(topOrders);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
@@ -79,15 +79,15 @@ public class OrderController {
     // Returns a list of all orders
     @GetMapping("/all")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<List<Order>> getAllOrders() {
-        List<Order> orders = orderService.getAllOrders();
+    public ResponseEntity<List<OrderResponse>> getAllOrders() {
+        List<OrderResponse> orders = orderService.getAllOrders();
         return ResponseEntity.ok(orders);
     }
 
     @PatchMapping("/accept/{id}")
-    public ResponseEntity<Order> acceptOrder(@PathVariable Integer id) {
+    public ResponseEntity<OrderResponse> acceptOrder(@PathVariable Integer id) {
         try {
-            Order acceptedOrder = orderService.acceptOrder(id);
+            OrderResponse acceptedOrder = orderService.acceptOrder(id);
             return ResponseEntity.status(HttpStatus.OK).body(acceptedOrder);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);

@@ -3,11 +3,13 @@ package com.teletrader.teletrader.order;
 import com.teletrader.teletrader.user.User;
 import com.teletrader.teletrader.user.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.aspectj.weaver.ast.Or;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -16,17 +18,29 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
 
-    public List<Order> getAllActiveOrders() {
-        return orderRepository.findByIsActiveTrue();
+    public List<OrderResponse> getAllActiveOrders() {
+        List<Order> orders = orderRepository.findByIsActiveTrue();
+        return orders
+                .stream()
+                .map(this::mapToOrderResponse)
+                .collect(Collectors.toList());
     }
 
-    public List<Order> getLast10OrdersByType(Type type) {
-        return orderRepository.findTop10ByTypeAndIsActiveTrueOrderByIdDesc(type);
+    public List<OrderResponse> getLast10OrdersByType(Type type) {
+        List<Order> orders = orderRepository.findTop10ByTypeAndIsActiveTrueOrderByIdDesc(type);
+        return orders
+                .stream()
+                .map(this::mapToOrderResponse)
+                .collect(Collectors.toList());
     }
 
-    public List<Order> getCurrentUserOrders () {
+    public List<OrderResponse> getCurrentUserOrders () {
         String username = getAuthenticatedUsername();
-        return orderRepository.findByCreatorUsername(username);
+        List<Order> orders = orderRepository.findByCreatorUsername(username);
+        return orders
+                .stream()
+                .map(this::mapToOrderResponse)
+                .collect(Collectors.toList());
     }
 
     private String getAuthenticatedUsername() {
@@ -37,7 +51,7 @@ public class OrderService {
         throw new IllegalStateException("User not authenticated");
     }
 
-    public Order createOrder(CreateOrderRequest createOrderRequest) {
+    public OrderResponse createOrder(CreateOrderRequest createOrderRequest) {
         if (createOrderRequest.getStockPrice() <= 0 || createOrderRequest.getStockAmount() <= 0) {
             throw new IllegalArgumentException("Stock price and amount must be greater than zero");
         }
@@ -55,10 +69,11 @@ public class OrderService {
                 .isActive(true)
                 .build();
 
-        return orderRepository.save(newOrder);
+        Order savedOrder = orderRepository.save(newOrder);
+        return mapToOrderResponse(savedOrder);
     }
 
-    public Order cancelOrder(Integer id) {
+    public OrderResponse cancelOrder(Integer id) {
         String username = getAuthenticatedUsername();
 
         Order order = orderRepository.findById(id)
@@ -70,28 +85,41 @@ public class OrderService {
 
         order.setIsActive(false);
 
-        return orderRepository.save(order);
+        Order cancelledOrder = orderRepository.save(order);
+        return mapToOrderResponse(cancelledOrder);
     }
 
-    public List<Order> getTopOrders(Type type, String stockSymbol) {
+    public List<OrderResponse> getTopOrders(Type type, String stockSymbol) {
         if (stockSymbol == null || stockSymbol.isBlank()) {
             throw new IllegalArgumentException("Stock symbol cannot be null or empty");
         }
 
         if (type == Type.BUY) {
-            return orderRepository.findTop10ByStockSymbolAndTypeOrderByStockPriceDesc(stockSymbol, type);
+            List<Order> orders = orderRepository.findTop10ByStockSymbolAndTypeOrderByStockPriceDesc(stockSymbol, type);
+            return orders
+                    .stream()
+                    .map(this::mapToOrderResponse)
+                    .collect(Collectors.toList());
         } else if (type == Type.SELL) {
-            return orderRepository.findTop10ByStockSymbolAndTypeOrderByStockPriceAsc(stockSymbol, type);
+            List<Order> orders = orderRepository.findTop10ByStockSymbolAndTypeOrderByStockPriceAsc(stockSymbol, type);
+            return orders
+                    .stream()
+                    .map(this::mapToOrderResponse)
+                    .collect(Collectors.toList());
         } else {
             throw new IllegalArgumentException("Order type must be BUY or SELL");
         }
     }
 
-    public List<Order> getAllOrders() {
-        return orderRepository.findAll();
+    public List<OrderResponse> getAllOrders() {
+        List<Order> orders = orderRepository.findAll();
+        return orders
+                .stream()
+                .map(this::mapToOrderResponse)
+                .collect(Collectors.toList());
     }
 
-    public Order acceptOrder(Integer id) {
+    public OrderResponse acceptOrder(Integer id) {
 
         String username = getAuthenticatedUsername();
 
@@ -115,6 +143,20 @@ public class OrderService {
 
         order.setAcceptor(acceptor);
         order.setIsActive(false);
-        return orderRepository.save(order);
+        Order acceptedOrder = orderRepository.save(order);
+        return mapToOrderResponse(acceptedOrder);
+    }
+
+    public OrderResponse mapToOrderResponse(Order order) {
+        return OrderResponse.builder()
+                .id(order.getId())
+                .creatorId(order.getCreator().getId())
+                .acceptorId(order.getAcceptor() != null ? order.getAcceptor().getId() : null)
+                .stockPrice(order.getStockPrice())
+                .stockAmount(order.getStockAmount())
+                .stockSymbol(order.getStockSymbol())
+                .isActive(order.getIsActive())
+                .type(order.getType())
+                .build();
     }
 }
