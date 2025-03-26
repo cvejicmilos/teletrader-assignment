@@ -18,29 +18,32 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
 
-    public List<OrderResponse> getAllActiveOrders() {
+    public ResponseWrapper<List<OrderResponse>> getAllActiveOrders() {
         List<Order> orders = orderRepository.findByIsActiveTrue();
-        return orders
+        List<OrderResponse> orderResponses =orders
                 .stream()
                 .map(this::mapToOrderResponse)
-                .collect(Collectors.toList());
+                .toList();
+        return new ResponseWrapper<>("Successfully fetched all active orders", orderResponses);
     }
 
-    public List<OrderResponse> getLast10OrdersByType(Type type) {
+    public ResponseWrapper<List<OrderResponse>> getLast10OrdersByType(Type type) {
         List<Order> orders = orderRepository.findTop10ByTypeAndIsActiveTrueOrderByIdDesc(type);
-        return orders
+        List<OrderResponse> orderResponses = orders
                 .stream()
                 .map(this::mapToOrderResponse)
-                .collect(Collectors.toList());
+                .toList();
+        return new ResponseWrapper<>("Successfully fetched last 10 " + type.toString() + " orders", orderResponses);
     }
 
-    public List<OrderResponse> getCurrentUserOrders () {
+    public ResponseWrapper<List<OrderResponse>> getCurrentUserOrders () {
         String username = getAuthenticatedUsername();
         List<Order> orders = orderRepository.findByCreatorUsername(username);
-        return orders
+        List<OrderResponse> orderResponses = orders
                 .stream()
                 .map(this::mapToOrderResponse)
-                .collect(Collectors.toList());
+                .toList();
+        return new ResponseWrapper<>("Successfully fetched " + username + "'s orders", orderResponses);
     }
 
     private String getAuthenticatedUsername() {
@@ -51,7 +54,7 @@ public class OrderService {
         throw new IllegalStateException("User not authenticated");
     }
 
-    public OrderResponse createOrder(CreateOrderRequest createOrderRequest) {
+    public ResponseWrapper<OrderResponse> createOrder(CreateOrderRequest createOrderRequest) {
         if (createOrderRequest.getStockPrice() <= 0 || createOrderRequest.getStockAmount() <= 0) {
             throw new IllegalArgumentException("Stock price and amount must be greater than zero");
         }
@@ -70,10 +73,11 @@ public class OrderService {
                 .build();
 
         Order savedOrder = orderRepository.save(newOrder);
-        return mapToOrderResponse(savedOrder);
+        OrderResponse orderResponse = mapToOrderResponse(savedOrder);
+        return new ResponseWrapper<>("Order created successfully", orderResponse);
     }
 
-    public OrderResponse cancelOrder(Integer id) {
+    public ResponseWrapper<OrderResponse> cancelOrder(Integer id) {
         String username = getAuthenticatedUsername();
 
         Order order = orderRepository.findById(id)
@@ -86,40 +90,50 @@ public class OrderService {
         order.setIsActive(false);
 
         Order cancelledOrder = orderRepository.save(order);
-        return mapToOrderResponse(cancelledOrder);
+        OrderResponse response = mapToOrderResponse(cancelledOrder);
+        return new ResponseWrapper<>("Order cancelled successfully", response);
     }
 
-    public List<OrderResponse> getTopOrders(Type type, String stockSymbol) {
+    public ResponseWrapper<List<OrderResponse>> getTopOrders(Type type, String stockSymbol) {
         if (stockSymbol == null || stockSymbol.isBlank()) {
             throw new IllegalArgumentException("Stock symbol cannot be null or empty");
         }
 
         if (type == Type.BUY) {
             List<Order> orders = orderRepository.findTop10ByStockSymbolAndTypeOrderByStockPriceDesc(stockSymbol, type);
-            return orders
+            List<OrderResponse> responses =  orders
                     .stream()
                     .map(this::mapToOrderResponse)
-                    .collect(Collectors.toList());
+                    .toList();
+            return new ResponseWrapper<>(
+                    "Successfully fetched top " + type.toString() + " orders for " + stockSymbol
+                    , responses
+            );
         } else if (type == Type.SELL) {
             List<Order> orders = orderRepository.findTop10ByStockSymbolAndTypeOrderByStockPriceAsc(stockSymbol, type);
-            return orders
+            List<OrderResponse> responses = orders
                     .stream()
                     .map(this::mapToOrderResponse)
-                    .collect(Collectors.toList());
+                    .toList();
+            return new ResponseWrapper<>(
+                    "Successfully fetched top " + type.toString() + " orders for " + stockSymbol
+                    , responses
+            );
         } else {
             throw new IllegalArgumentException("Order type must be BUY or SELL");
         }
     }
 
-    public List<OrderResponse> getAllOrders() {
+    public ResponseWrapper<List<OrderResponse>> getAllOrders() {
         List<Order> orders = orderRepository.findAll();
-        return orders
+        List<OrderResponse> response = orders
                 .stream()
                 .map(this::mapToOrderResponse)
-                .collect(Collectors.toList());
+                .toList();
+        return new ResponseWrapper<>("Successfully fetched all orders", response);
     }
 
-    public OrderResponse acceptOrder(Integer id) {
+    public ResponseWrapper<OrderResponse> acceptOrder(Integer id) {
 
         String username = getAuthenticatedUsername();
 
@@ -144,7 +158,8 @@ public class OrderService {
         order.setAcceptor(acceptor);
         order.setIsActive(false);
         Order acceptedOrder = orderRepository.save(order);
-        return mapToOrderResponse(acceptedOrder);
+        OrderResponse orderResponse = mapToOrderResponse(acceptedOrder);
+        return new ResponseWrapper<>("Successfully accepted order", orderResponse);
     }
 
     public OrderResponse mapToOrderResponse(Order order) {

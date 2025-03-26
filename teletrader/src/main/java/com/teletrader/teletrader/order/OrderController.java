@@ -18,48 +18,51 @@ public class OrderController {
 
     // Returns a list of all ACTIVE orders
     @GetMapping
-    public ResponseEntity<List<OrderResponse>> getAllActiveOrders() {
-        List<OrderResponse> orders = orderService.getAllActiveOrders();
-        return ResponseEntity.ok(orders);
+    public ResponseEntity<ResponseWrapper<List<OrderResponse>>> getAllActiveOrders() {
+        ResponseWrapper<List<OrderResponse>> response = orderService.getAllActiveOrders();
+        return ResponseEntity.ok(response);
     }
 
     // Creates a new order
     @PostMapping
-    public ResponseEntity<OrderResponse> createOrder(@RequestBody @Valid CreateOrderRequest createOrderRequest) {
+    public ResponseEntity<ResponseWrapper<OrderResponse>> createOrder(@RequestBody @Valid CreateOrderRequest createOrderRequest) {
         try {
-            OrderResponse newOrder = orderService.createOrder(createOrderRequest);
-            return ResponseEntity.status(HttpStatus.CREATED).body(newOrder);
+            ResponseWrapper<OrderResponse> response = orderService.createOrder(createOrderRequest);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+            ResponseWrapper<OrderResponse> errorResponse = new ResponseWrapper<>(e.getMessage(), null);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
 
     // Cancels an order with that id
     @PatchMapping("/cancel/{id}")
-    public ResponseEntity<OrderResponse> cancelOrder(@PathVariable Integer id) {
+    public ResponseEntity<ResponseWrapper<OrderResponse>> cancelOrder(@PathVariable Integer id) {
         try {
-            OrderResponse cancelledOrder = orderService.cancelOrder(id);
-            return ResponseEntity.status(HttpStatus.OK).body(cancelledOrder);
+            ResponseWrapper<OrderResponse> response = orderService.cancelOrder(id);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+            ResponseWrapper<OrderResponse> errorResponse = new ResponseWrapper<>(e.getMessage(), null);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
 
     // Returns a list of 10 last active orders
     @GetMapping("/latest")
-    public ResponseEntity<List<OrderResponse>> getLast10OrdersByType(@RequestParam Type type) {
-        List<OrderResponse> orders = orderService.getLast10OrdersByType(type);
-        return ResponseEntity.ok(orders);
+    public ResponseEntity<ResponseWrapper<List<OrderResponse>>> getLast10OrdersByType(@RequestParam Type type) {
+        ResponseWrapper<List<OrderResponse>> response = orderService.getLast10OrdersByType(type);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     // Returns all (active and not) orders made by user
     @GetMapping("/my")
     public ResponseEntity<?> getMyOrders() {
         try {
-            List<OrderResponse> myOrders = orderService.getCurrentUserOrders();
-            return ResponseEntity.ok(myOrders);
+            ResponseWrapper<List<OrderResponse>> response = orderService.getCurrentUserOrders();
+            return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            ResponseWrapper<OrderResponse> errorResponse = new ResponseWrapper<>(e.getMessage(), null);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
 
@@ -67,30 +70,30 @@ public class OrderController {
     @GetMapping("/top")
     public ResponseEntity<?> getTopOrders(@RequestParam Type type, @RequestParam String stockSymbol) {
         try {
-            List<OrderResponse> topOrders = orderService.getTopOrders(type, stockSymbol);
-            return ResponseEntity.ok(topOrders);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            ResponseWrapper<List<OrderResponse>> response = orderService.getTopOrders(type, stockSymbol);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred");
+            ResponseWrapper<OrderResponse> errorResponse = new ResponseWrapper<>(e.getMessage(), null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
 
     // Returns a list of all orders
     @GetMapping("/all")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<List<OrderResponse>> getAllOrders() {
-        List<OrderResponse> orders = orderService.getAllOrders();
-        return ResponseEntity.ok(orders);
+    public ResponseEntity<ResponseWrapper<List<OrderResponse>>> getAllOrders() {
+        ResponseWrapper<List<OrderResponse>> response = orderService.getAllOrders();
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PatchMapping("/accept/{id}")
-    public ResponseEntity<OrderResponse> acceptOrder(@PathVariable Integer id) {
+    public ResponseEntity<ResponseWrapper<OrderResponse>> acceptOrder(@PathVariable Integer id) {
         try {
-            OrderResponse acceptedOrder = orderService.acceptOrder(id);
-            return ResponseEntity.status(HttpStatus.OK).body(acceptedOrder);
+            ResponseWrapper<OrderResponse> response = orderService.acceptOrder(id);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+            ResponseWrapper<OrderResponse> errorResponse = new ResponseWrapper<>(e.getMessage(), null);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
 }
