@@ -1,0 +1,37 @@
+services:
+  app:
+    image: teletrader-assignment:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - PG_CONNECTION_STRING=jdbc:postgresql://db:5432/postgres
+      - PG_USER=postgres
+      - PG_PASSWORD=postgrespass
+      - JWT_SECRET_KEY=7ed538d6df1e624530e38e7c68788a01a37af4139cc5727295ca31ab6e135e78
+    depends_on:
+      - db
+    networks:
+      - app-network
+
+  db:
+    image: postgres:16
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgrespass
+      - POSTGRES_DB=teletrader
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - app-network
+
+volumes:
+  postgres-data:
+
+networks:
+  app-network:
+    driver: bridge

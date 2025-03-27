@@ -1,9 +1,11 @@
 spring:
-  config:
-    import: application-secret.yml
   datasource:
-    url: jdbc:postgresql://localhost:5432/teletrader
+    url: ${PG_CONNECTION_STRING}
     driver-class-name: org.postgresql.Driver
+    username: ${PG_USER}
+    password: ${PG_PASSWORD}
+  jwt:
+    secret-key: ${JWT_SECRET_KEY}
   jpa:
     hibernate:
       ddl-auto: create-drop
